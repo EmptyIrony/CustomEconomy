@@ -98,7 +98,7 @@ object UI {
                                     open(player, economyType)
                                 }
                             } else {
-                                set(slot, config.getItemStack("cant_claim")!!.doReplace(required, contents[index] ?: emptyList(), economyNames[required] ?: "无")) {
+                                set(slot, config.getItemStack("cant_claim")!!.doReplace(required, contents[required] ?: emptyList(), economyNames[required] ?: "无")) {
                                     isCancelled = true
                                 }
                             }
