@@ -130,6 +130,7 @@ object CustomEconomyCommands {
         execute<CommandSender> { sender, _, _ ->
             ConfigLoader.config.reload()
             ConfigLoader.i()
+            UI.config.reload()
             sender.sendMessage("ok")
         }
     }
