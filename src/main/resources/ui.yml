@@ -1,0 +1,28 @@
+title: "领取奖励"
+format:
+  - "         "
+  - " ####### "
+  - "    !    "
+claim:
+  material: CHEST
+  name: "%name%"
+  lore:
+    - "内容: "
+    - "%contents%"
+    - ""
+    - "需求: %required%"
+    - ""
+    - "未领取"
+claimed:
+  material: CHEST
+  name: "%name%"
+  lore:
+    - "内容: "
+    - "%contents%"
+    - ""
+    - "需求: %required%"
+    - ""
+    - "已领取"
+close:
+  material: BARRIER
+  name: "&c关闭"

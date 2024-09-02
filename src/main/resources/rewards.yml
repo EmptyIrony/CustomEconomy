@@ -1,0 +1,13 @@
+金币:
+  10:
+    contents:
+      - "  &7- &a钻石"
+    commands:
+      - give %player% diamond
+    name: "&a金币礼包#1"
+  20:
+    contents:
+      - "  &7- &a钻石 &7x 2"
+    commands:
+      - give %player% diamond 2
+    name: "&a金币礼包#2"
