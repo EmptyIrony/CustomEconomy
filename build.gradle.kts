@@ -10,7 +10,7 @@ plugins {
 
 taboolib {
     env {
-        install(UNIVERSAL, BUKKIT_ALL, DATABASE, UI)
+        install(UNIVERSAL, BUKKIT_ALL, DATABASE, UI, EXPANSION_SUBMIT_CHAIN)
     }
     description {
         name = "CustomEconomy"

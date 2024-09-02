@@ -2,12 +2,14 @@ package me.cunzai.plugin.customeconomy.ui
 
 import me.cunzai.plugin.customeconomy.config.ConfigLoader
 import me.cunzai.plugin.customeconomy.data.PlayerClaimData
+import me.cunzai.plugin.customeconomy.database.MySQLHandler
 import me.cunzai.plugin.customeconomy.database.MySQLHandler.save
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import taboolib.common.platform.function.submitAsync
 import taboolib.common5.util.replace
+import taboolib.expansion.submitChain
 import taboolib.library.xseries.getItemStack
 import taboolib.module.configuration.Config
 import taboolib.module.configuration.Configuration
@@ -34,68 +36,80 @@ object UI {
         val format = config.getStringList("format")
         val title = config.getStringColored("title") ?: return
 
-        data.doRefresh()
+        submitChain {
+            val money = async {
+                MySQLHandler.getValue(player.name, economyType)
+            } ?: 0
 
-        player.openMenu<Chest>(title) {
-            rows(format.size)
-            map(*format.toTypedArray())
-            onClick { it.isCancelled = true }
+            sync {
+                data.doRefresh()
 
-            var index = 0
-            rewards.toList().sortedBy { it.first }.forEach { (required, commands) ->
-                val slot = getSlots('#').getOrNull(index)
-                index++
-                if (slot == null) return
+                player.openMenu<Chest>(title) {
+                    rows(format.size)
+                    map(*format.toTypedArray())
+                    onClick { it.isCancelled = true }
 
-                if (data.claimed.contains(required.toString())) {
-                    set(slot, config.getItemStack("claimed")!!.doReplace(
-                        required, contents[required] ?: emptyList(), economyNames[required] ?: "无",
-                    )) {
-                        isCancelled = true
-                        player.sendLang("claimed")
+                    var index = 0
+                    rewards.toList().sortedBy { it.first }.forEach { (required, commands) ->
+                        val slot = getSlots('#').getOrNull(index)
+                        index++
+                        if (slot == null) return@sync
+
+                        if (data.claimed.contains(required.toString())) {
+                            set(slot, config.getItemStack("claimed")!!.doReplace(
+                                required, contents[required] ?: emptyList(), economyNames[required] ?: "无",
+                            )) {
+                                isCancelled = true
+                                player.sendLang("claimed")
+                            }
+                        } else {
+                            if (money >= required) {
+                                set(
+                                    slot, config.getItemStack("claim")!!.doReplace(
+                                        required, contents[required] ?: emptyList(), economyNames[required] ?: "无",
+                                    )
+                                ) {
+                                    isCancelled = true
+
+                                    data.doRefresh()
+
+                                    val success = data.claimed.add(required.toString())
+                                    if (!success) {
+                                        open(player, economyType)
+                                        player.sendLang("claimed")
+                                        return@set
+                                    }
+
+                                    submitAsync {
+                                        data.save()
+                                    }
+
+                                    commands.replace(
+                                        "%player%" to player.name
+                                    ).forEach { command ->
+                                        Bukkit.dispatchCommand(
+                                            Bukkit.getConsoleSender(),
+                                            command
+                                        )
+                                    }
+
+                                    player.sendLang("claim_success")
+
+                                    open(player, economyType)
+                                }
+                            } else {
+                                set(slot, config.getItemStack("cant_claim")!!.doReplace(required, contents[index] ?: emptyList(), economyNames[required] ?: "无")) {
+                                    isCancelled = true
+                                }
+                            }
+                        }
                     }
-                } else {
-                    set(slot, config.getItemStack("claim")!!.doReplace(
-                        required, contents[required] ?: emptyList(), economyNames[required] ?: "无",
-                    )) {
+
+                    set('!', config.getItemStack("close")!!) {
                         isCancelled = true
-
-                        data.doRefresh()
-
-                        val success = data.claimed.add(required.toString())
-                        if (!success) {
-                            open(player, economyType)
-                            player.sendLang("claimed")
-                            return@set
-                        }
-
-                        submitAsync {
-                            data.save()
-                        }
-
-                        commands.replace(
-                            "%player%" to player.name
-                        ).forEach { command ->
-                            Bukkit.dispatchCommand(
-                                Bukkit.getConsoleSender(),
-                                command
-                            )
-                        }
-
-                        player.sendLang("claim_success")
-
-                        open(player, economyType)
+                        player.closeInventory()
                     }
                 }
-            }
-
-            getSlots('#').forEachIndexed { index, slot ->
-                val rewardCommands = rewards[index] ?: return@forEachIndexed
-                data.claimed.contains("${economyType}_")
-            }
-
-            set('!', config.getItemStack("close")!!) {
-                isCancelled = true
             }
         }
     }

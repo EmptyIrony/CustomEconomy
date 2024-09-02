@@ -3,6 +3,16 @@ format:
   - "         "
   - " ####### "
   - "    !    "
+cant_claim:
+  material: CHEST
+  name: "%name%"
+  lore:
+    - "内容: "
+    - "%contents%"
+    - ""
+    - "需求: %required%"
+    - ""
+    - "未达到"
 claim:
   material: CHEST
   name: "%name%"
