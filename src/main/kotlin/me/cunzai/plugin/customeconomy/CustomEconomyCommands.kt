@@ -135,7 +135,7 @@ object CustomEconomyCommands {
         }
     }
 
-    @CommandBody
+    @CommandBody(permissionDefault = PermissionDefault.TRUE)
     val rewards = subCommand {
         dynamic("货币类型") {
             execute<Player> { sender, context, argument ->
