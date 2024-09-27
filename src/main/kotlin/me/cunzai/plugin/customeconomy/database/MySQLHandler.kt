@@ -91,7 +91,7 @@ object MySQLHandler {
                 }
             }
         }.firstOrNull {
-            val cron = ConfigLoader.economyCleanCron[name]
+            val cron = ConfigLoader.economyCleanCron[economyName]
             if (cron != null) {
                 val refreshedAt = getLong("last_refresh_at")
                 val lastCleanTime = cron.getLastAndNextExecutionTime().first

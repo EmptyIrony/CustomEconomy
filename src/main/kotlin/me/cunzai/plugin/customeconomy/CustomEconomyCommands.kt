@@ -17,10 +17,10 @@ import java.io.File
 import java.util.UUID
 import kotlin.math.max
 
-@CommandHeader(name = "customshop", permission = "customshop.admin")
+@CommandHeader(name = "customshop", permissionDefault = PermissionDefault.TRUE)
 object CustomEconomyCommands {
 
-    @CommandBody
+    @CommandBody(permission = "customshop.admin")
     val add = subCommand {
         dynamic("玩家") {
             dynamic("货币") {
@@ -48,7 +48,7 @@ object CustomEconomyCommands {
         }
     }
 
-    @CommandBody
+    @CommandBody(permission = "customshop.admin")
     val set = subCommand {
         dynamic("玩家") {
             dynamic("货币") {
@@ -76,7 +76,7 @@ object CustomEconomyCommands {
         }
     }
 
-    @CommandBody
+    @CommandBody(permission = "customshop.admin")
     val take = subCommand {
         dynamic("玩家") {
             dynamic("货币") {
@@ -104,7 +104,7 @@ object CustomEconomyCommands {
         }
     }
 
-    @CommandBody
+    @CommandBody(permission = "customshop.admin")
     val look = subCommand {
         dynamic("玩家") {
             dynamic("货币") {
@@ -125,7 +125,7 @@ object CustomEconomyCommands {
         }
     }
 
-    @CommandBody
+    @CommandBody(permission = "customshop.admin")
     val reload = subCommand {
         execute<CommandSender> { sender, _, _ ->
             ConfigLoader.config.reload()
@@ -144,7 +144,7 @@ object CustomEconomyCommands {
         }
     }
 
-    @CommandBody
+    @CommandBody(permission = "customshop.admin")
     val transfer = subCommand {
         dynamic("文件路径") {
             execute<CommandSender> { sender, _, argument ->
@@ -180,7 +180,7 @@ object CustomEconomyCommands {
         }
     }
 
-    @CommandBody
+    @CommandBody(permission = "customshop.admin")
     val main = mainCommand {
         createHelper(checkPermissions = true)
     }
