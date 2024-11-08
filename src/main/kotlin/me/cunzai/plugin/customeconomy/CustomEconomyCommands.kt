@@ -2,6 +2,7 @@ package me.cunzai.plugin.customeconomy
 
 import me.cunzai.plugin.customeconomy.config.ConfigLoader
 import me.cunzai.plugin.customeconomy.database.MySQLHandler
+import me.cunzai.plugin.customeconomy.misc.getLastAndNextExecutionTime
 import me.cunzai.plugin.customeconomy.ui.ShopUI
 import me.cunzai.plugin.customeconomy.ui.UI
 import org.bukkit.Bukkit
@@ -13,9 +14,11 @@ import taboolib.expansion.createHelper
 import taboolib.module.chat.colored
 import taboolib.module.database.ColumnTypeSQLite
 import taboolib.module.database.HostSQLite
+import taboolib.module.database.Order
 import taboolib.module.database.Table
 import taboolib.platform.util.sendLang
 import java.io.File
+import java.time.ZoneId
 import java.util.UUID
 import kotlin.math.max
 
@@ -34,6 +37,89 @@ object CustomEconomyCommands {
 
                 ShopUI.open(sender, argument)
             }
+        }
+    }
+
+    @CommandBody
+    val leader = subCommand {
+        dynamic("货币类型") {
+            execute<CommandSender> { sender, _, argument ->
+                if (!ConfigLoader.knownEconomyType.contains(argument)) {
+                    sender.sendMessage("&c未知货币类型".colored())
+                    return@execute
+                }
+
+                sender.sendMessage("&7查询中...".colored())
+                submitAsync {
+                    sender.sendMessage("&7查询结果: 第1页\n".colored())
+                    leaders(argument, 0).forEachIndexed { index, (name, amount) ->
+                        sender.sendMessage("&7${index + 1}. &e$name &7- &a$amount\n".colored())
+                    }
+                    val sum = sum(argument)
+                    sender.sendMessage("&7全服总和: &8$sum".colored())
+                }
+            }
+            int("page") {
+                execute<CommandSender> { sender, context, argument ->
+                    if (!ConfigLoader.knownEconomyType.contains(context["货币类型"])) {
+                        sender.sendMessage("&c未知货币类型".colored())
+                        return@execute
+                    }
+
+                    sender.sendMessage("&7查询中...".colored())
+                    submitAsync {
+                        sender.sendMessage("&7查询结果: 第${argument}页\n".colored())
+                        leaders(context["货币类型"], (argument.toInt() - 1) * 5).forEachIndexed { index, (name, amount) ->
+                            sender.sendMessage("&7${index + 1 + (argument.toInt() - 1) * 5}. &e$name &7- &a$amount\n".colored())
+                        }
+                        val sum = sum(context["货币类型"])
+                        sender.sendMessage("&7全服总和: &8$sum".colored())
+                    }
+                }
+            }
+        }
+    }
+
+    private fun sum(economyType: String): Int {
+        val table = MySQLHandler.tables[economyType] ?: return 0
+        val cron = ConfigLoader.economyCleanCron[economyType]
+
+        return table.select(MySQLHandler.datasource) {
+            rows("SUM(value) as sum")
+
+            where {
+                if (cron != null) {
+                    val (last, _) = cron.getLastAndNextExecutionTime()
+                    val lastTimestamp = last.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    "last_refresh_at" gte lastTimestamp
+                }
+            }
+
+            orderBy("value", Order.Type.DESC)
+        }.firstOrNull {
+            getInt("sum")
+        } ?: 0
+    }
+
+    private fun leaders(economyType: String, skip: Int, ): List<Pair<String, Int>> {
+        val table = MySQLHandler.tables[economyType] ?: return emptyList()
+        val cron = ConfigLoader.economyCleanCron[economyType]
+
+        return table.select(MySQLHandler.datasource) {
+            where {
+                if (cron != null) {
+                    val (last, _) = cron.getLastAndNextExecutionTime()
+                    val lastTimestamp = last.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    "last_refresh_at" gte lastTimestamp
+                }
+            }
+
+            offset(skip)
+            limit(5)
+
+            orderBy("value", Order.Type.DESC)
+        }.map {
+            getString("player_name") to getInt("value")
         }
     }
 
