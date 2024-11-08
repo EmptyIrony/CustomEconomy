@@ -4,6 +4,46 @@ economy:
     # 在每月的1日的凌晨2点调整任务
     # 可参考网址: https://cron.qqe2.com/ 在线cron表达式
     clean: "0 0 2 1 * ?"
+    shop:
+      options:
+        # 可删, 打开权限
+        permission: "shop.金币"
+        refresh_cron: "0 0 2 1 * ?"
+        # 每次刷新的商品数量
+        round_amount: 5
+        # 刷新逻辑, 删掉为不允许刷新
+        refresh:
+          # 消耗货币类型
+          # COINS,POINTS,CUSTOM CUSTOM是当前货币
+          cost: COINS
+          # 刷新价格
+          value: 100
+          # 最大刷新次数
+          max_limit: 3
+      items:
+        a:
+          icon:
+            material: DIAMOND
+            name: "商品"
+            lore:
+              - "asda"
+            custom-model-data: 1
+          commands:
+            - "give {player} diamond 1"
+          weight: 10
+          price: 100
+          buy_limit: 1
+        b:
+          icon:
+            material: DIAMOND
+            name: "商品"
+            lore:
+              - "asda"
+            custom-model-data: 1
+          weight: 10
+          price: 100
+          buy_limit: 1
+
   钻石:
   青金石:
   黑曜石:

@@ -2,6 +2,7 @@ package me.cunzai.plugin.customeconomy
 
 import me.cunzai.plugin.customeconomy.config.ConfigLoader
 import me.cunzai.plugin.customeconomy.database.MySQLHandler
+import me.cunzai.plugin.customeconomy.ui.ShopUI
 import me.cunzai.plugin.customeconomy.ui.UI
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
@@ -13,12 +14,28 @@ import taboolib.module.chat.colored
 import taboolib.module.database.ColumnTypeSQLite
 import taboolib.module.database.HostSQLite
 import taboolib.module.database.Table
+import taboolib.platform.util.sendLang
 import java.io.File
 import java.util.UUID
 import kotlin.math.max
 
 @CommandHeader(name = "customshop", permissionDefault = PermissionDefault.TRUE)
 object CustomEconomyCommands {
+
+    @CommandBody(permissionDefault = PermissionDefault.TRUE)
+    val shop = subCommand {
+        dynamic("货币类型") {
+            execute<Player> { sender, _, argument ->
+                val config = ConfigLoader.shopConfigs[argument] ?: return@execute
+                if (config.permissionRequired != null && !sender.hasPermission(config.permissionRequired)) {
+                    sender.sendLang("no_permission")
+                    return@execute
+                }
+
+                ShopUI.open(sender, argument)
+            }
+        }
+    }
 
     @CommandBody(permission = "customshop.admin")
     val add = subCommand {

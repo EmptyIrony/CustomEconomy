@@ -1,0 +1,31 @@
+title: "{name} 商店"
+format:
+  - "#########"
+  - " !!!!!!! "
+  - " !!!!!!! "
+  - " !!!!!!! "
+  - "<   $@  >"
+placeholder:
+  material: GRAY_STAINED_GLASS_PANE
+  name: "&c"
+good_lore_add:
+  - ""
+  - "§7购买价格: §e{price} {currency}"
+  - "&7限购数量: &e{bought}/{max_limit}"
+close:
+  material: BARRIER
+  name: "&c关闭"
+  commands:
+    - "say 关闭了ui"
+refresh:
+  material: PAPER
+  name: "&a刷新"
+  lore:
+    - "消耗: {cost} {name}"
+    - "剩余刷新次数: {remaining}"
+previous:
+  material: ARROW
+  name: "&a上一页"
+next:
+  material: ARROW
+  name: "&a下一页"

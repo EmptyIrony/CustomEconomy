@@ -2,6 +2,7 @@ package me.cunzai.plugin.customeconomy.misc
 
 import com.cronutils.model.Cron
 import com.cronutils.model.time.ExecutionTime
+import com.google.gson.Gson
 import java.time.LocalDateTime
 import java.time.ZoneId
 import kotlin.jvm.optionals.getOrNull
@@ -18,3 +19,5 @@ fun Cron.getLastAndNextExecutionTime(): Pair<LocalDateTime, LocalDateTime> {
 
     return Pair(last.toLocalDateTime(), next.toLocalDateTime())
 }
+
+val gson = Gson()

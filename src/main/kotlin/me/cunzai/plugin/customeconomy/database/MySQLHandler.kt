@@ -2,7 +2,9 @@ package me.cunzai.plugin.customeconomy.database
 
 import me.cunzai.plugin.customeconomy.config.ConfigLoader
 import me.cunzai.plugin.customeconomy.data.PlayerClaimData
+import me.cunzai.plugin.customeconomy.data.PlayerShopData
 import me.cunzai.plugin.customeconomy.misc.getLastAndNextExecutionTime
+import me.cunzai.plugin.customeconomy.misc.gson
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import taboolib.common.platform.event.SubscribeEvent
@@ -27,6 +29,22 @@ object MySQLHandler {
 
     val tables = HashMap<String, Table<Host<SQL>, SQL>>()
     val claimTables = HashMap<String, Table<Host<SQL>, SQL>>()
+
+    val shopTable by lazy {
+        Table("custom_economy_shop_data", host) {
+            add {
+                id()
+            }
+
+            add("player_name") {
+                type(ColumnTypeSQL.VARCHAR, 36)
+            }
+
+            add("data") {
+                type(ColumnTypeSQL.LONGTEXT)
+            }
+        }
+    }
 
 
     fun init() {
@@ -80,6 +98,11 @@ object MySQLHandler {
                 }.run()
             }
         }
+
+        shopTable.workspace(datasource) {
+            createTable(checkExists = true)
+            createIndex(Index("idx_player_name", listOf("player_name"), checkExists = true))
+        }.run()
     }
 
     fun getValue(name: String, economyName: String): Int? {
@@ -181,7 +204,39 @@ object MySQLHandler {
                     HashMap()
                 }[economyType] = data
             }
+
+            val shopData = shopTable.select(datasource) {
+                rows("data")
+                where {
+                    "player_name" eq player.name
+                }
+            }.firstOrNull {
+                val data = gson.fromJson(getString("data"), PlayerShopData::class.java)
+                data.name = player.name
+                data
+            } ?: run {
+                val data = PlayerShopData()
+                data.name = player.name
+                shopTable.insert(datasource, "player_name", "data") {
+                    value(player.name, gson.toJson(data))
+                }
+                data
+            }
+
+            PlayerShopData.cache[player.uniqueId] = shopData
         }
+    }
+
+    fun PlayerShopData.update() {
+        val shopData = this
+        shopTable.workspace(datasource) {
+            update {
+                set("data", gson.toJson(shopData))
+                where {
+                    "player_name" eq name
+                }
+            }
+        }.run()
     }
 
     fun PlayerClaimData.save() {

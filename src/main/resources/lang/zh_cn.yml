@@ -1,2 +1,12 @@
 claim_success: "&a领取成功"
 claimed: "&c你已经领取过了"
+
+good_sold_out: "&c商品购买已达上限"
+no_money: "{0} 不足"
+buy_success: "&a购买成功"
+
+refresh_limit: "刷新已达上限"
+
+refresh_success: "&a刷新成功"
+
+no_permission: "&c没有权限"

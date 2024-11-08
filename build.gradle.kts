@@ -26,6 +26,7 @@ repositories {
 }
 
 dependencies {
+    compileOnly("com.google.code.gson:gson:2.8.9")
     compileOnly("ink.ptms.core:v12004:12004:mapped")
     compileOnly("ink.ptms.core:v12004:12004:universal")
     compileOnly("com.cronutils:cron-utils:9.2.1")
